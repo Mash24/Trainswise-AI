@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  profile       Profile?
+  tasks         Task[]
+  submissions   Submission[]
+  reviews       Review[]
+}
+
+model Profile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  bio           String?
+  skills        String[]
+  experience    Int       @default(0)
+  rating        Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Task {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  type          TaskType
+  status        TaskStatus @default(OPEN)
+  difficulty    TaskDifficulty
+  reward        Float
+  deadline      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  assignedTo    User?     @relation(fields: [assignedToId], references: [id])
+  assignedToId  String?
+  submissions   Submission[]
+  reviews       Review[]
+}
+
+model Submission {
+  id            String    @id @default(cuid())
+  taskId        String
+  task          Task      @relation(fields: [taskId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  content       String
+  status        SubmissionStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviews       Review[]
+}
+
+model Review {
+  id            String    @id @default(cuid())
+  taskId        String
+  task          Task      @relation(fields: [taskId], references: [id])
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  reviewerId    String
+  reviewer      User      @relation(fields: [reviewerId], references: [id])
+  score         Int
+  feedback      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  REVIEWER
+}
+
+enum TaskType {
+  TEXT_ANNOTATION
+  IMAGE_LABELING
+  DATA_CLEANING
+  MODEL_TRAINING
+  QUALITY_CHECK
+}
+
+enum TaskStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  REJECTED
+}
+
+enum TaskDifficulty {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+} 
