@@ -1,4 +1,5 @@
 import { PrismaClient, UserRole, TaskType, TaskStatus, TaskDifficulty, SubmissionStatus } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -8,7 +9,7 @@ async function main() {
     data: {
       email: 'admin@nexusloop.com',
       name: 'Admin User',
-      password: 'admin123', // In production, use a hashed password
+      password: await bcrypt.hash('admin123', 10),
       role: UserRole.ADMIN,
       profile: {
         create: {
@@ -26,7 +27,7 @@ async function main() {
     data: {
       email: 'reviewer@nexusloop.com',
       name: 'Reviewer User',
-      password: 'reviewer123', // In production, use a hashed password
+      password: await bcrypt.hash('reviewer123', 10),
       role: UserRole.REVIEWER,
       profile: {
         create: {
@@ -44,7 +45,7 @@ async function main() {
     data: {
       email: 'user@nexusloop.com',
       name: 'Regular User',
-      password: 'user123', // In production, use a hashed password
+      password: await bcrypt.hash('user123', 10),
       role: UserRole.USER,
       profile: {
         create: {
@@ -66,7 +67,7 @@ async function main() {
       status: TaskStatus.OPEN,
       difficulty: TaskDifficulty.EASY,
       reward: 10.0,
-      deadline: new Date('2025-06-01'),
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
     },
   });
 
@@ -78,7 +79,7 @@ async function main() {
       status: TaskStatus.OPEN,
       difficulty: TaskDifficulty.MEDIUM,
       reward: 15.0,
-      deadline: new Date('2025-06-15'),
+      deadline: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 days from now
     },
   });
 
@@ -90,16 +91,18 @@ async function main() {
       status: TaskStatus.OPEN,
       difficulty: TaskDifficulty.HARD,
       reward: 20.0,
-      deadline: new Date('2025-06-30'),
+      deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
     },
   });
 
   console.log('Seed data created successfully!');
+  console.log('Created users:', { admin: admin.email, reviewer: reviewer.email, user: user.email });
+  console.log('Created tasks:', { task1: task1.title, task2: task2.title, task3: task3.title });
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('Error seeding database:', e);
     process.exit(1);
   })
   .finally(async () => {

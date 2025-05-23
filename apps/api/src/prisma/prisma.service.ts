@@ -1,1 +1,1 @@
- 
+export { PrismaService } from '@nexusloop/db'; 

@@ -2,17 +2,24 @@
   "name": "@nexusloop/config",
   "version": "0.0.1",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "lint": "eslint .",
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rimraf .turbo node_modules dist"
+  },
+  "dependencies": {
+    "@nestjs/config": "^3.0.0",
+    "@nexusloop/types": "0.0.1"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "@types/node": "^20.11.30",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.5",
+    "tsup": "^8.0.2",
+    "typescript": "^4.9.5"
   }
 } 

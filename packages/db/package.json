@@ -1,31 +1,36 @@
 {
-  "name": "db",
-  "version": "0.0.0",
+  "name": "@nexusloop/db",
+  "version": "0.0.1",
   "private": true,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint \"src/**/*.ts*\"",
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rimraf .turbo node_modules dist",
     "db:generate": "prisma generate",
     "db:push": "prisma db push --skip-generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
+  "dependencies": {
+    "@nexusloop/config": "0.0.1",
+    "@nexusloop/types": "0.0.1",
+    "@prisma/client": "^5.10.2"
+  },
   "devDependencies": {
     "@types/node": "^20.11.30",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^8.57.0",
     "prisma": "^5.10.2",
+    "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.4.2"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.10.2"
+    "typescript": "^4.9.5"
   }
 }

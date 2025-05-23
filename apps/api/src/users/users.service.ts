@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,6 +10,11 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.findByEmail(createUserDto.email);
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     return this.prisma.user.create({
       data: {
@@ -27,13 +32,19 @@ export class UsersService {
     });
   }
 
-  async findOne(id: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+  async findOne(id: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
         profile: true,
       },
     });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return user;
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -46,6 +57,8 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    await this.findOne(id); // This will throw NotFoundException if user doesn't exist
+
     const data = { ...updateUserDto };
     if (updateUserDto.password) {
       data.password = await bcrypt.hash(updateUserDto.password, 10);
@@ -57,6 +70,8 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<User> {
+    await this.findOne(id); // This will throw NotFoundException if user doesn't exist
+    
     return this.prisma.user.delete({
       where: { id },
     });
