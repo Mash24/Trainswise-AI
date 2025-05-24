@@ -4,7 +4,6 @@ import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { User } from '@prisma/client';
 
 interface JwtPayload {
   email: string;
@@ -21,6 +20,17 @@ interface LoginResponse {
     name: string | null;
     role: string;
   };
+}
+
+// Add local User type
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  password: string;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 @Injectable()
@@ -114,8 +124,17 @@ export class AuthService {
   }
 
   async logout(token: string) {
-    await this.prisma.refreshToken.delete({
-      where: { token },
-    });
+    try {
+      await this.prisma.refreshToken.delete({
+        where: { token },
+      });
+    } catch (error) {
+      // Ignore error if token does not exist
+      if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2025') {
+        // do nothing
+      } else {
+        throw error;
+      }
+    }
   }
 } 

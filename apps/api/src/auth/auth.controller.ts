@@ -31,7 +31,7 @@ interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
 }
 
-interface LoginResponse {
+class LoginResponse {
   access_token: string;
   refresh_token: string;
   user: {

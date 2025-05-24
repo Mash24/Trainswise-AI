@@ -1,11 +1,14 @@
 import 'reflect-metadata';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import * as helmet from 'helmet';
-import * as rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -24,8 +27,8 @@ async function bootstrap() {
   // Rate limiting
   app.use(
     rateLimit({
-      windowMs: configService.get('rateLimit.windowMs'),
-      max: configService.get('rateLimit.max'),
+      windowMs: configService.get('rateLimit.windowMs') ?? 15 * 60 * 1000, // 15 minutes default
+      max: configService.get('rateLimit.max') ?? 100, // 100 requests default
     }),
   );
 

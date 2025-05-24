@@ -4,9 +4,16 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": ["dist/**"]
     },
-    "lint": {},
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+    },
+    "lint": {
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -19,10 +26,6 @@
     },
     "db:push": {
       "cache": false
-    },
-    "db:studio": {
-      "cache": false,
-      "persistent": true
     },
     "db:seed": {
       "cache": false

@@ -16,8 +16,14 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "composite": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "files": [
+    "src/index.ts",
+    "src/prisma/prisma.service.ts",
+    "src/prisma/prisma.module.ts"
+  ]
 } 

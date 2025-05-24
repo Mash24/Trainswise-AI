@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { appConfig, authConfig, databaseConfig, redisConfig, rateLimitConfig } from '@nexusloop/config';
+import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 
 @Module({
   imports: [
@@ -16,12 +17,23 @@ import { appConfig, authConfig, databaseConfig, redisConfig, rateLimitConfig } f
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => ({
-        store: await redisStore({
+      useFactory: async () => {
+        if (process.env.NODE_ENV === 'test') {
+          // Use in-memory cache for tests
+          return {
+            store: 'memory' as any,
+            max: 100,
+            ttl: 5,
+          };
+        }
+        return {
+          store: redisStore as unknown as CacheStoreFactory,
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT || '6379', 10),
-        }),
-      }),
+          ttl: 5,
+          max: 100,
+        };
+      },
     }),
     PrismaModule,
     UsersModule,
