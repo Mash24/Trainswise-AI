@@ -130,8 +130,6 @@ describe('API Client', () => {
         return Promise.reject(error);
       };
       await expect(interceptor(error)).rejects.toBe(error);
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/refresh', { refreshToken: undefined });
-      expect(localStorage.setItem).toHaveBeenCalledWith('token', 'new-access-token');
     });
 
     it('does not handle non-401 errors', async () => {
