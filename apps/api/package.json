@@ -27,7 +27,7 @@
     "@nestjs/platform-express": "10.4.17",
     "@nestjs/swagger": "7.4.2",
     "@nestjs/terminus": "10.3.0",
-    "@nestjs/websockets": "^11.1.1",
+    "@nestjs/websockets": "10.0.0",
     "@nexusloop/config": "^0.0.1",
     "@nexusloop/db": "*",
     "@nexusloop/types": "*",

@@ -6,8 +6,8 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts --no-config",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch --no-config",
     "lint": "eslint \"src/**/*.ts*\"",
     "clean": "rimraf .turbo node_modules dist"
   },

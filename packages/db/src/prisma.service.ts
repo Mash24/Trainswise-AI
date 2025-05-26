@@ -4,9 +4,7 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    super({
-      log: ['query', 'info', 'warn', 'error'],
-    });
+    super();
   }
 
   async onModuleInit() {
@@ -20,10 +18,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async cleanDatabase() {
     if (process.env.NODE_ENV === 'production') return;
     
-    const models = Reflect.ownKeys(this).filter((key) => typeof key === 'string' && key[0] !== '_');
+    const models = Reflect.ownKeys(this).filter((key) => 
+      typeof key === 'string' && 
+      key[0] !== '_' && 
+      key in this
+    ) as Array<keyof PrismaClient>;
     
     return Promise.all(
-      models.map((modelKey) => this[modelKey as string].deleteMany()),
+      models.map((modelKey) => (this[modelKey] as any).deleteMany()),
     );
   }
 } 
