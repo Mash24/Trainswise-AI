@@ -12,10 +12,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "composite": true
   },
   "exclude": ["node_modules", "dist"],
-  "files": [],
   "references": [
     { "path": "./apps/api" },
     { "path": "./packages/config" },

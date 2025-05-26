@@ -1,108 +1,117 @@
-import { PrismaClient, UserRole, TaskType, TaskStatus, TaskDifficulty, SubmissionStatus } from '@prisma/client';
+import { PrismaClient, UserRole, TaskType, TaskStatus, TaskDifficulty } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create an admin user
-  const admin = await prisma.user.create({
+  // Create admin user
+  const adminUser = await prisma.user.create({
     data: {
-      email: 'admin@nexusloop.com',
+      email: 'admin@example.com',
       name: 'Admin User',
       password: await bcrypt.hash('admin123', 10),
       role: UserRole.ADMIN,
       profile: {
         create: {
-          bio: 'System Administrator',
+          bio: 'System administrator',
           skills: ['Management', 'System Administration'],
-          experience: 10,
-          rating: 5.0,
         },
       },
     },
   });
 
-  // Create a reviewer user
-  const reviewer = await prisma.user.create({
+  // Create worker user
+  const workerUser = await prisma.user.create({
     data: {
-      email: 'reviewer@nexusloop.com',
-      name: 'Reviewer User',
-      password: await bcrypt.hash('reviewer123', 10),
-      role: UserRole.REVIEWER,
+      email: 'worker@example.com',
+      name: 'Worker User',
+      password: await bcrypt.hash('worker123', 10),
+      role: UserRole.WORKER,
       profile: {
         create: {
-          bio: 'Senior Reviewer',
-          skills: ['Review', 'Quality Assurance'],
-          experience: 8,
-          rating: 4.8,
+          bio: 'Professional worker',
+          skills: ['Data Entry', 'Quality Assurance'],
         },
       },
     },
   });
 
-  // Create a regular user
-  const user = await prisma.user.create({
+  // Create client user
+  const clientUser = await prisma.user.create({
     data: {
-      email: 'user@nexusloop.com',
-      name: 'Regular User',
-      password: await bcrypt.hash('user123', 10),
-      role: UserRole.USER,
+      email: 'client@example.com',
+      name: 'Client User',
+      password: await bcrypt.hash('client123', 10),
+      role: UserRole.CLIENT,
       profile: {
         create: {
-          bio: 'AI Enthusiast',
-          skills: ['Data Annotation', 'Image Labeling'],
-          experience: 2,
-          rating: 4.0,
+          bio: 'Task client',
+          skills: ['Project Management', 'Task Creation'],
         },
       },
     },
   });
 
-  // Create some tasks
-  const task1 = await prisma.task.create({
-    data: {
-      title: 'Text Annotation Task',
-      description: 'Annotate the following text data for sentiment analysis.',
-      type: TaskType.TEXT_ANNOTATION,
-      status: TaskStatus.OPEN,
-      difficulty: TaskDifficulty.EASY,
-      reward: 10.0,
-      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    },
-  });
-
-  const task2 = await prisma.task.create({
-    data: {
-      title: 'Image Labeling Task',
-      description: 'Label the following images for object detection.',
-      type: TaskType.IMAGE_LABELING,
-      status: TaskStatus.OPEN,
-      difficulty: TaskDifficulty.MEDIUM,
-      reward: 15.0,
-      deadline: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 days from now
-    },
-  });
-
-  const task3 = await prisma.task.create({
-    data: {
-      title: 'Data Cleaning Task',
-      description: 'Clean and preprocess the following dataset for machine learning.',
-      type: TaskType.DATA_CLEANING,
-      status: TaskStatus.OPEN,
-      difficulty: TaskDifficulty.HARD,
-      reward: 20.0,
-      deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days from now
-    },
-  });
+  // Create tasks
+  const tasks = await Promise.all([
+    prisma.task.create({
+      data: {
+        title: 'Image Annotation Task',
+        description: 'Annotate images with bounding boxes',
+        type: TaskType.IMAGE_ANNOTATION,
+        status: TaskStatus.OPEN,
+        difficulty: TaskDifficulty.MEDIUM,
+        reward: 50.0,
+        deadline: new Date('2024-12-31'),
+        client: {
+          connect: {
+            id: adminUser.id,
+          },
+        },
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'Data Entry Task',
+        description: 'Enter data from scanned documents',
+        type: TaskType.DATA_ENTRY,
+        status: TaskStatus.OPEN,
+        difficulty: TaskDifficulty.EASY,
+        reward: 30.0,
+        deadline: new Date('2024-12-31'),
+        client: {
+          connect: {
+            id: adminUser.id,
+          },
+        },
+      },
+    }),
+    prisma.task.create({
+      data: {
+        title: 'Transcription Task',
+        description: 'Transcribe audio recordings',
+        type: TaskType.TRANSCRIPTION,
+        status: TaskStatus.OPEN,
+        difficulty: TaskDifficulty.HARD,
+        reward: 100.0,
+        deadline: new Date('2024-12-31'),
+        client: {
+          connect: {
+            id: adminUser.id,
+          },
+        },
+      },
+    }),
+  ]);
 
   console.log('Seed data created successfully!');
-  console.log('Created users:', { admin: admin.email, reviewer: reviewer.email, user: user.email });
-  console.log('Created tasks:', { task1: task1.title, task2: task2.title, task3: task3.title });
+  console.log('Created users:', { adminUser, workerUser, clientUser });
+  console.log('Created tasks:', tasks);
 }
 
 main()
   .catch((e) => {
-    console.error('Error seeding database:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

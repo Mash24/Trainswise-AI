@@ -15,11 +15,12 @@ model User {
   email         String    @unique
   name          String?
   password      String
-  role          UserRole  @default(USER)
+  role          UserRole  @default(CLIENT)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   profile       Profile?
   tasks         Task[]
+  clientTasks   Task[]    @relation("ClientTasks")
   submissions   Submission[]
   reviews       Review[]
   refreshTokens RefreshToken[]
@@ -31,7 +32,6 @@ model Profile {
   user          User      @relation(fields: [userId], references: [id])
   bio           String?
   skills        String[]
-  experience    Int       @default(0)
   rating        Float     @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -50,6 +50,8 @@ model Task {
   updatedAt     DateTime  @updatedAt
   assignedTo    User?     @relation(fields: [assignedToId], references: [id])
   assignedToId  String?
+  client        User      @relation("ClientTasks", fields: [clientId], references: [id])
+  clientId      String
   submissions   Submission[]
   reviews       Review[]
 }
@@ -92,17 +94,17 @@ model RefreshToken {
 }
 
 enum UserRole {
-  USER
   ADMIN
-  REVIEWER
+  WORKER
+  CLIENT
 }
 
 enum TaskType {
   TEXT_ANNOTATION
-  IMAGE_LABELING
-  DATA_CLEANING
-  MODEL_TRAINING
-  QUALITY_CHECK
+  IMAGE_ANNOTATION
+  DATA_ENTRY
+  TRANSCRIPTION
+  MODERATION
 }
 
 enum TaskStatus {

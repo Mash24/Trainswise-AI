@@ -18,21 +18,14 @@ describe('TasksService', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      count: jest.fn(),
-      groupBy: jest.fn(),
     },
     user: {
       findUnique: jest.fn(),
-    },
-    statusHistory: {
-      create: jest.fn(),
     },
   };
 
   const mockNotificationsGateway = {
     notifyTaskStatusChange: jest.fn(),
-    notifyTaskAssigned: jest.fn(),
-    notifyTaskCompleted: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -73,105 +66,86 @@ describe('TasksService', () => {
         data: {
           ...createTaskDto,
           clientId,
-          statusHistory: {
-            create: {
-              status: TaskStatus.OPEN,
-              changedBy: clientId,
-            },
-          },
         },
         include: {
           client: true,
-          worker: true,
-          statusHistory: true,
         },
       });
     });
   });
 
-  describe('assignTask', () => {
-    it('should assign a task to a worker', async () => {
-      const taskId = 'task-id';
-      const workerId = 'worker-id';
-      const clientId = 'client-id';
-      const expectedTask = { id: taskId, workerId, status: TaskStatus.ASSIGNED };
+  describe('findAll', () => {
+    it('should return an array of tasks', async () => {
+      const expectedTasks = [
+        { id: 'task-1', title: 'Task 1' },
+        { id: 'task-2', title: 'Task 2' },
+      ];
 
-      mockPrismaService.task.findUnique.mockResolvedValue({ id: taskId, clientId, status: TaskStatus.OPEN });
-      mockPrismaService.user.findUnique.mockResolvedValue({ id: workerId, role: 'WORKER' });
+      mockPrismaService.task.findMany.mockResolvedValue(expectedTasks);
+
+      const result = await service.findAll({ clientId: 'client-id' });
+      expect(result).toEqual(expectedTasks);
+      expect(mockPrismaService.task.findMany).toHaveBeenCalledWith({
+        where: { clientId: 'client-id' },
+        include: {
+          client: true,
+        },
+      });
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a task by id', async () => {
+      const taskId = 'task-id';
+      const expectedTask = { id: taskId, title: 'Test Task' };
+
+      mockPrismaService.task.findUnique.mockResolvedValue(expectedTask);
+
+      const result = await service.findOne(taskId);
+      expect(result).toEqual(expectedTask);
+      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+        where: { id: taskId },
+        include: {
+          client: true,
+        },
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('should update a task', async () => {
+      const taskId = 'task-id';
+      const updateTaskDto: UpdateTaskDto = { title: 'Updated Task' };
+      const expectedTask = { id: taskId, ...updateTaskDto };
+
+      mockPrismaService.task.findUnique.mockResolvedValue({ id: taskId, clientId: 'client-id' });
       mockPrismaService.task.update.mockResolvedValue(expectedTask);
 
-      const result = await service.assignTask(taskId, workerId, clientId);
+      const result = await service.update(taskId, updateTaskDto, 'client-id');
       expect(result).toEqual(expectedTask);
-      expect(mockNotificationsGateway.notifyTaskAssigned).toHaveBeenCalledWith(taskId, workerId);
+      expect(mockPrismaService.task.update).toHaveBeenCalledWith({
+        where: { id: taskId },
+        data: updateTaskDto,
+        include: {
+          client: true,
+        },
+      });
     });
   });
 
-  describe('completeTask', () => {
-    it('should mark a task as completed', async () => {
+  describe('remove', () => {
+    it('should remove a task', async () => {
       const taskId = 'task-id';
-      const workerId = 'worker-id';
-      const clientId = 'client-id';
-      const expectedTask = { id: taskId, status: TaskStatus.COMPLETED };
+      const expectedTask = { id: taskId, title: 'Test Task' };
 
-      mockPrismaService.task.findUnique.mockResolvedValue({ id: taskId, workerId, clientId, status: TaskStatus.IN_PROGRESS });
-      mockPrismaService.task.update.mockResolvedValue(expectedTask);
+      mockPrismaService.task.findUnique.mockResolvedValue({ id: taskId, clientId: 'client-id' });
+      mockPrismaService.task.delete.mockResolvedValue(expectedTask);
 
-      const result = await service.completeTask(taskId, workerId);
+      const result = await service.remove(taskId, 'client-id');
       expect(result).toEqual(expectedTask);
-      expect(mockNotificationsGateway.notifyTaskCompleted).toHaveBeenCalledWith(taskId, clientId);
-    });
-  });
-
-  describe('getCompletionRate', () => {
-    it('should return task completion rate', async () => {
-      const total = 10;
-      const completed = 5;
-      const expectedRate = { total, completed, completionRate: completed / total };
-
-      mockPrismaService.task.count.mockResolvedValueOnce(total);
-      mockPrismaService.task.count.mockResolvedValueOnce(completed);
-
-      const result = await service.getCompletionRate();
-      expect(result).toEqual(expectedRate);
-    });
-  });
-
-  describe('getAverageCompletionTime', () => {
-    it('should return average task completion time', async () => {
-      const completedTasks = [{ actualTime: 10 }, { actualTime: 20 }];
-      const expectedTime = { averageMinutes: 15 };
-
-      mockPrismaService.task.findMany.mockResolvedValue(completedTasks);
-
-      const result = await service.getAverageCompletionTime();
-      expect(result).toEqual(expectedTime);
-    });
-  });
-
-  describe('getTaskDistribution', () => {
-    it('should return task distribution', async () => {
-      const byStatus = [{ status: 'OPEN', _count: { _all: 5 } }];
-      const byType = [{ type: 'TYPE1', _count: { _all: 3 } }];
-      const byDifficulty = [{ difficulty: 'EASY', _count: { _all: 2 } }];
-      const expectedDistribution = { byStatus, byType, byDifficulty };
-
-      mockPrismaService.task.groupBy.mockResolvedValueOnce(byStatus);
-      mockPrismaService.task.groupBy.mockResolvedValueOnce(byType);
-      mockPrismaService.task.groupBy.mockResolvedValueOnce(byDifficulty);
-
-      const result = await service.getTaskDistribution();
-      expect(result).toEqual(expectedDistribution);
-    });
-  });
-
-  describe('getEarningsPerUser', () => {
-    it('should return earnings per user', async () => {
-      const earnings = [{ workerId: 'worker-id', _sum: { reward: 100 } }];
-
-      mockPrismaService.task.groupBy.mockResolvedValue(earnings);
-
-      const result = await service.getEarningsPerUser();
-      expect(result).toEqual(earnings);
+      expect(mockPrismaService.task.delete).toHaveBeenCalledWith({
+        where: { id: taskId },
+      });
     });
   });
 }); 

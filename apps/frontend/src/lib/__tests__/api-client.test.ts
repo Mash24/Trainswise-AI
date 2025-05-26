@@ -65,7 +65,7 @@ describe('API Client', () => {
 
   describe('Request Interceptor', () => {
     it('adds authorization header when token exists', async () => {
-      localStorage.getItem.mockReturnValue('test-token');
+      (localStorage.getItem as jest.Mock).mockReturnValue('test-token');
       const config = { headers: {} };
       // Simulate the interceptor logic
       const interceptor = (config: any) => {
@@ -80,7 +80,7 @@ describe('API Client', () => {
     });
 
     it('does not add authorization header when token does not exist', async () => {
-      localStorage.getItem.mockReturnValue(null);
+      (localStorage.getItem as jest.Mock).mockReturnValue(null);
       const config = { headers: {} };
       const interceptor = (config: any) => {
         const token = localStorage.getItem('token');

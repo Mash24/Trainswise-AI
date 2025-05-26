@@ -14,13 +14,13 @@ export interface Task {
   description: string;
   type: TaskType;
   difficulty: TaskDifficulty;
-  priority: TaskPriority;
   reward: number;
   deadline?: Date;
   category?: string[];
   tags?: string[];
   estimatedTime?: number;
-  workerId?: string;
+  clientId: string;
+  assignedToId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

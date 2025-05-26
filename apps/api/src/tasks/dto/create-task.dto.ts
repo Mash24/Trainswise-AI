@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsNumber, IsOptional, IsArray, IsDate, Min, IsUUID } from 'class-validator';
-import { TaskType, TaskDifficulty, TaskPriority } from '@prisma/client';
+import { TaskType, TaskDifficulty } from '@prisma/client';
 
 export class CreateTaskDto {
   @IsString()
@@ -31,10 +31,6 @@ export class CreateTaskDto {
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
-
-  @IsOptional()
-  @IsEnum(TaskPriority)
-  priority?: TaskPriority;
 
   @IsOptional()
   @IsNumber()
