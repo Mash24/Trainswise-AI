@@ -31,24 +31,86 @@ model RefreshToken {
 }
 
 model Task {
-  id          String         @id @default(uuid())
-  title       String
-  description String
-  type        TaskType
-  difficulty  TaskDifficulty
-  status      TaskStatus     @default(OPEN)
-  reward      Float
-  deadline    DateTime?
-  clientId    String
-  workerId    String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  submissions Submission[]
-  client      User           @relation("ClientTasks", fields: [clientId], references: [id])
-  worker      User?          @relation("WorkerTasks", fields: [workerId], references: [id])
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  type          TaskType
+  difficulty    TaskDifficulty
+  status        TaskStatus     @default(OPEN)
+  reward        Float
+  deadline      DateTime?
+  clientId      String
+  workerId      String?
+  category      String[]
+  tags          String[]
+  priority      TaskPriority   @default(MEDIUM)
+  estimatedTime Int?           // in minutes
+  actualTime    Int?           // in minutes
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  submissions   Submission[]
+  milestones    Milestone[]
+  attachments   Attachment[]
+  comments      Comment[]
+  statusHistory StatusHistory[]
+  client        User           @relation("ClientTasks", fields: [clientId], references: [id])
+  worker        User?          @relation("WorkerTasks", fields: [workerId], references: [id])
 
   @@index([clientId])
   @@index([workerId])
+}
+
+model Milestone {
+  id          String   @id @default(uuid())
+  taskId      String
+  title       String
+  description String?
+  dueDate     DateTime
+  completed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        Task     @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+}
+
+model StatusHistory {
+  id        String     @id @default(uuid())
+  taskId    String
+  status    TaskStatus
+  changedAt DateTime   @default(now())
+  changedBy String
+  comment   String?
+  task      Task       @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  taskId    String
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id])
+
+  @@index([taskId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  task      Task     @relation(fields: [taskId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 model Submission {
@@ -81,6 +143,25 @@ model Review {
   @@index([reviewerId])
 }
 
+model TaskTemplate {
+  id          String         @id @default(uuid())
+  title       String
+  description String
+  type        TaskType
+  difficulty  TaskDifficulty
+  category    String[]
+  tags        String[]
+  priority    TaskPriority   @default(MEDIUM)
+  estimatedTime Int?         // in minutes
+  createdBy   String
+  isPublic    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  creator     User           @relation(fields: [createdBy], references: [id])
+
+  @@index([createdBy])
+}
+
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
@@ -95,6 +176,8 @@ model User {
   submissions   Submission[]
   clientTasks   Task[]         @relation("ClientTasks")
   workerTasks   Task[]         @relation("WorkerTasks")
+  comments      Comment[]
+  taskTemplates TaskTemplate[]
 }
 
 enum UserRole {
@@ -130,4 +213,11 @@ enum SubmissionStatus {
   APPROVED
   REJECTED
   NEEDS_REVISION
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }

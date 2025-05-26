@@ -1,0 +1,47 @@
+import { IsString, IsEnum, IsNumber, IsOptional, IsArray, IsDate, Min, IsUUID } from 'class-validator';
+import { TaskType, TaskDifficulty, TaskPriority } from '@prisma/client';
+
+export class CreateTaskDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsEnum(TaskType)
+  type: TaskType;
+
+  @IsEnum(TaskDifficulty)
+  difficulty: TaskDifficulty;
+
+  @IsNumber()
+  @Min(0)
+  reward: number;
+
+  @IsOptional()
+  @IsDate()
+  deadline?: Date;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  category?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsEnum(TaskPriority)
+  priority?: TaskPriority;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  estimatedTime?: number;
+
+  @IsOptional()
+  @IsUUID()
+  workerId?: string;
+} 
