@@ -11,16 +11,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "incremental": true,
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "composite": true
+    "rootDir": "src",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "composite": false,
+    "incremental": false
   },
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "./apps/api" },
-    { "path": "./packages/config" },
-    { "path": "./packages/types" },
-    { "path": "./packages/db" },
-    { "path": "./packages/ui" }
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
