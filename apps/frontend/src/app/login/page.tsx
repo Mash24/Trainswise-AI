@@ -43,11 +43,11 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {error && (
+          {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+              {error}
+            </div>
+          )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -73,9 +73,9 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button
-              type="submit"
+            type="submit"
               className="w-full"
-              disabled={isLoading}
+            disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>

@@ -1,10 +1,23 @@
+import { Hero } from '@/components/home/Hero';
+import { HowItWorks } from '@/components/home/HowItWorks';
+import { Features } from '@/components/home/Features';
+import { WhyNexusLoop } from '@/components/home/WhyNexusLoop';
+import { CallToAction } from '@/components/home/CallToAction';
+import { FAQ } from '@/components/home/FAQ';
+import { Support } from '@/components/home/Support';
+import { Footer } from '@/components/home/Footer';
+
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold">Welcome to NexusLoop</h1>
-      <p className="mt-4 text-lg text-muted-foreground">
-        Your platform for AI training jobs and tasks
-      </p>
-    </div>
+    <main>
+      <Hero />
+      <HowItWorks />
+      <Features />
+      <WhyNexusLoop />
+      <CallToAction />
+      <Support />
+      <FAQ />
+      <Footer />
+    </main>
   );
 } 
