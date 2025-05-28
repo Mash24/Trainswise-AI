@@ -1,18 +1,20 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsNumber, IsBoolean, Min } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsArray, IsNumber, IsBoolean, Min, MinLength } from 'class-validator';
 import { TaskType, TaskDifficulty } from '@prisma/client';
 
 export class CreateTaskTemplateDto {
   @IsString()
-  title: string;
+  @MinLength(3)
+  title: string = '';
 
   @IsString()
-  description: string;
+  @MinLength(10)
+  description: string = '';
 
   @IsEnum(TaskType)
-  type: TaskType;
+  type: TaskType = TaskType.TEXT_ANNOTATION;
 
   @IsEnum(TaskDifficulty)
-  difficulty: TaskDifficulty;
+  difficulty: TaskDifficulty = TaskDifficulty.EASY;
 
   @IsOptional()
   @IsArray()

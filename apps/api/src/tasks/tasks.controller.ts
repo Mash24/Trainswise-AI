@@ -17,6 +17,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { RequestWithUser } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -30,25 +31,23 @@ export class TasksController {
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: 201, description: 'The task has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
-  create(@Body() createTaskDto: CreateTaskDto, @Req() req) {
-    return this.tasksService.create(createTaskDto, req.user.id);
+  create(@Req() req: RequestWithUser, @Body() createTaskDto: CreateTaskDto) {
+    return this.tasksService.create(req.user.id, createTaskDto);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all tasks' })
   @ApiResponse({ status: 200, description: 'Return all tasks.' })
-  findAll(@Req() req) {
-    return this.tasksService.findAll({
-      clientId: req.user.role === UserRole.CLIENT ? req.user.id : undefined,
-    });
+  findAll(@Req() req: RequestWithUser) {
+    return this.tasksService.findAll(req.user.id);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a task by id' })
   @ApiResponse({ status: 200, description: 'Return the task.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(id);
+  findOne(@Req() req: RequestWithUser, @Param('id') id: string) {
+    return this.tasksService.findOne(req.user.id, id);
   }
 
   @Patch(':id')
@@ -57,8 +56,8 @@ export class TasksController {
   @ApiResponse({ status: 200, description: 'The task has been successfully updated.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto, @Req() req) {
-    return this.tasksService.update(id, updateTaskDto, req.user.id);
+  update(@Req() req: RequestWithUser, @Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+    return this.tasksService.update(req.user.id, id, updateTaskDto);
   }
 
   @Delete(':id')
@@ -66,7 +65,7 @@ export class TasksController {
   @ApiOperation({ summary: 'Delete a task' })
   @ApiResponse({ status: 200, description: 'The task has been successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Task not found.' })
-  remove(@Param('id') id: string, @Req() req) {
-    return this.tasksService.remove(id, req.user.id);
+  remove(@Req() req: RequestWithUser, @Param('id') id: string) {
+    return this.tasksService.remove(req.user.id, id);
   }
 } 

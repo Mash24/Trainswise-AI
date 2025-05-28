@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewsService } from './reviews.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@nexusloop/db';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { DisputeReviewDto } from './dto/dispute-review.dto';
@@ -30,7 +30,18 @@ describe('ReviewsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReviewsService,
-        { provide: PrismaService, useValue: mockPrismaService },
+        {
+          provide: PrismaService,
+          useValue: {
+            review: {
+              findMany: jest.fn(),
+              findUnique: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+          },
+        },
         { provide: NotificationsGateway, useValue: mockNotificationsGateway },
       ],
     }).compile();
@@ -42,6 +53,28 @@ describe('ReviewsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('should return an array of reviews', async () => {
+      const mockReviews = [
+        {
+          id: '1',
+          submissionId: '1',
+          reviewerId: '1',
+          feedback: 'Great work!',
+          score: 5,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      jest.spyOn(prisma.review, 'findMany').mockResolvedValue(mockReviews);
+
+      const result = await service.findAll();
+      expect(result).toEqual(mockReviews);
+      expect(prisma.review.findMany).toHaveBeenCalled();
+    });
   });
 
   describe('createReview', () => {

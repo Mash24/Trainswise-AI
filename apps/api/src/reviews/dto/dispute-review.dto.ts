@@ -1,9 +1,9 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class DisputeReviewDto {
-  @IsUUID()
-  reviewId: string;
+  @IsString()
+  reviewId: string = '';
 
   @IsString()
-  reason: string;
+  reason: string = '';
 } 

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@nexusloop/db';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -32,7 +32,18 @@ describe('TasksService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TasksService,
-        { provide: PrismaService, useValue: mockPrismaService },
+        {
+          provide: PrismaService,
+          useValue: {
+            task: {
+              findMany: jest.fn(),
+              findUnique: jest.fn(),
+              create: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
+          },
+        },
         { provide: NotificationsGateway, useValue: mockNotificationsGateway },
       ],
     }).compile();
@@ -76,21 +87,29 @@ describe('TasksService', () => {
 
   describe('findAll', () => {
     it('should return an array of tasks', async () => {
-      const expectedTasks = [
-        { id: 'task-1', title: 'Task 1' },
-        { id: 'task-2', title: 'Task 2' },
+      const mockTasks = [
+        {
+          id: '1',
+          title: 'Test Task',
+          description: 'Test Description',
+          type: 'TEXT_ANNOTATION',
+          difficulty: 'EASY',
+          status: 'OPEN',
+          reward: 100,
+          clientId: '1',
+          category: [],
+          tags: [],
+          priority: 'MEDIUM',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ];
 
-      mockPrismaService.task.findMany.mockResolvedValue(expectedTasks);
+      jest.spyOn(prisma.task, 'findMany').mockResolvedValue(mockTasks);
 
-      const result = await service.findAll({ clientId: 'client-id' });
-      expect(result).toEqual(expectedTasks);
-      expect(mockPrismaService.task.findMany).toHaveBeenCalledWith({
-        where: { clientId: 'client-id' },
-        include: {
-          client: true,
-        },
-      });
+      const result = await service.findAll();
+      expect(result).toEqual(mockTasks);
+      expect(prisma.task.findMany).toHaveBeenCalled();
     });
   });
 

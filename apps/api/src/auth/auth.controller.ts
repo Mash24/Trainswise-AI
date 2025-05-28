@@ -16,6 +16,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Request } from 'express';
+import { RegisterDto } from './dto/register.dto';
 
 type User = {
   id: string;
@@ -32,13 +33,18 @@ interface RequestWithUser extends Request {
 }
 
 class LoginResponse {
-  access_token: string;
-  refresh_token: string;
+  access_token: string = '';
+  refresh_token: string = '';
   user: {
     id: string;
     email: string;
     name: string | null;
     role: string;
+  } = {
+    id: '',
+    email: '',
+    name: null,
+    role: 'USER'
   };
 }
 
@@ -60,6 +66,11 @@ export class AuthController {
       throw new UnauthorizedException('Invalid credentials');
     }
     return this.authService.login(user);
+  }
+
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    // Implementation
   }
 
   @Post('refresh')

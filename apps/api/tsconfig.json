@@ -20,7 +20,11 @@
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
     "types": ["node", "jest"],
-    "allowJs": true
+    "allowJs": true,
+    "paths": {
+      "@nexusloop/*": ["../../packages/*/src"]
+    },
+    "moduleResolution": "node"
   },
   "references": [
     { "path": "../../packages/db" }

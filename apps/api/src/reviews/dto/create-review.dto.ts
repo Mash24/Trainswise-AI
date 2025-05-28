@@ -1,17 +1,17 @@
-import { IsString, IsInt, IsUUID, Min, Max } from 'class-validator';
+import { IsString, IsNumber, Min, Max } from 'class-validator';
 
 export class CreateReviewDto {
-  @IsUUID()
-  submissionId: string;
-
-  @IsUUID()
-  reviewerId: string;
+  @IsString()
+  submissionId: string = '';
 
   @IsString()
-  feedback: string;
+  reviewerId: string = '';
 
-  @IsInt()
+  @IsString()
+  feedback: string = '';
+
+  @IsNumber()
   @Min(1)
   @Max(5)
-  score: number;
+  score: number = 1;
 } 

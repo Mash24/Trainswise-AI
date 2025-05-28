@@ -6,7 +6,7 @@ export class BulkCreateTasksDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateTaskDto)
-  tasks: CreateTaskDto[];
+  tasks: CreateTaskDto[] = [];
 
   @IsOptional()
   @IsArray()

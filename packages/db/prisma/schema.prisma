@@ -25,6 +25,8 @@ model User {
   reviews       Review[]
   refreshTokens RefreshToken[]
   notifications Notification[]
+  wallet        Wallet?
+  transactions  Transaction[]
 }
 
 model Profile {
@@ -107,6 +109,30 @@ model Notification {
   updatedAt DateTime @updatedAt
 }
 
+model Wallet {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  balance       Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  walletId      String
+  wallet        Wallet    @relation(fields: [walletId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Float
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
 enum UserRole {
   ADMIN
   WORKER
@@ -144,4 +170,18 @@ enum SubmissionStatus {
   APPROVED
   REJECTED
   NEEDS_REVISION
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TASK_REWARD
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
 } 

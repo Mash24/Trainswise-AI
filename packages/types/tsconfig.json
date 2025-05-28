@@ -1,9 +1,14 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "strict": true,
+    "module": "commonjs",
+    "target": "es2017",
+    "moduleResolution": "node"
   },
-  "include": ["src/index.ts", "src/auth.types.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 } 

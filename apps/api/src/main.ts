@@ -18,17 +18,23 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Enable CORS
-  app.enableCors();
+  // Enable CORS with proper configuration
+  app.enableCors({
+    origin: configService.get('cors.origin'),
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true,
+  });
 
   // Security middleware
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+  }));
 
   // Rate limiting
   app.use(
     rateLimit({
-      windowMs: configService.get('rateLimit.windowMs') ?? 15 * 60 * 1000, // 15 minutes default
-      max: configService.get('rateLimit.max') ?? 100, // 100 requests default
+      windowMs: configService.get('rateLimit.windowMs'),
+      max: configService.get('rateLimit.max'),
     }),
   );
 

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -8,6 +8,11 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { appConfig, authConfig, databaseConfig, redisConfig, rateLimitConfig } from '@nexusloop/config';
 import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
+import { TasksModule } from './tasks/tasks.module';
+import { SubmissionsModule } from './submissions/submissions.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { WalletModule } from './wallet/wallet.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,28 +22,22 @@ import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async () => {
-        if (process.env.NODE_ENV === 'test') {
-          // Use in-memory cache for tests
-          return {
-            store: 'memory' as any,
-            max: 100,
-            ttl: 5,
-          };
-        }
-        return {
-          store: redisStore as unknown as CacheStoreFactory,
-          host: process.env.REDIS_HOST || 'localhost',
-          port: parseInt(process.env.REDIS_PORT || '6379', 10),
-          ttl: 5,
-          max: 100,
-        };
-      },
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('CACHE_TTL', 60 * 60), // 1 hour default
+        max: configService.get('CACHE_MAX_ITEMS', 100), // 100 items default
+      }),
+      inject: [ConfigService],
     }),
     PrismaModule,
     UsersModule,
     AuthModule,
     HealthModule,
+    TasksModule,
+    SubmissionsModule,
+    ReviewsModule,
+    WalletModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {} 

@@ -1,22 +1,21 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2021",
-    "module": "Node16",
-    "lib": ["es2021"],
-    "declaration": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node16",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "incremental": true,
-    "composite": true,
-    "jsx": "react-jsx",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@nexusloop/types": ["../types/src"]
+    }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "../types/src/**/*"],
+  "references": [
+    {
+      "path": "../types"
+    }
+  ]
 } 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ProtectedRoute } from '@/components/auth/protected-route';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { ReviewItem } from '@/components/reviews/review-item';
 import { apiClient } from '@/lib/api-client';
 

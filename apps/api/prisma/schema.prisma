@@ -7,191 +7,160 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Profile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  bio       String?
-  location  String?
-  skills    String[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  profile       Profile?
+  tasks         Task[]    @relation("WorkerTasks")
+  clientTasks   Task[]    @relation("ClientTasks")
+  submissions   Submission[]
+  reviews       Review[]
+  refreshTokens RefreshToken[]
+  notifications Notification[]
+  wallet        Wallet?
+  transactions  Transaction[]
+  comments      Comment[]
 }
 
-model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+model Profile {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  bio           String?
+  skills        String[]
+  rating        Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Task {
-  id            String         @id @default(uuid())
+  id            String    @id @default(cuid())
   title         String
   description   String
   type          TaskType
+  status        TaskStatus @default(OPEN)
   difficulty    TaskDifficulty
-  status        TaskStatus     @default(OPEN)
   reward        Float
   deadline      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  assignedTo    User?     @relation("WorkerTasks", fields: [assignedToId], references: [id])
+  assignedToId  String?
+  client        User      @relation("ClientTasks", fields: [clientId], references: [id])
   clientId      String
-  workerId      String?
-  category      String[]
-  tags          String[]
-  priority      TaskPriority   @default(MEDIUM)
-  estimatedTime Int?           // in minutes
-  actualTime    Int?           // in minutes
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
   submissions   Submission[]
-  milestones    Milestone[]
-  attachments   Attachment[]
+  reviews       Review[]
   comments      Comment[]
-  statusHistory StatusHistory[]
-  client        User           @relation("ClientTasks", fields: [clientId], references: [id])
-  worker        User?          @relation("WorkerTasks", fields: [workerId], references: [id])
-
-  @@index([clientId])
-  @@index([workerId])
+  attachments   Attachment[]
 }
 
-model Milestone {
-  id          String   @id @default(uuid())
-  taskId      String
-  title       String
-  description String?
-  dueDate     DateTime
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  task        Task     @relation(fields: [taskId], references: [id])
-
-  @@index([taskId])
+model Submission {
+  id            String    @id @default(cuid())
+  taskId        String
+  task          Task      @relation(fields: [taskId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  content       String
+  status        SubmissionStatus @default(PENDING)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  reviews       Review[]
 }
 
-model StatusHistory {
-  id        String     @id @default(uuid())
+model Review {
+  id            String    @id @default(cuid())
+  taskId        String
+  task          Task      @relation(fields: [taskId], references: [id])
+  submissionId  String
+  submission    Submission @relation(fields: [submissionId], references: [id])
+  reviewerId    String
+  reviewer      User      @relation(fields: [reviewerId], references: [id])
+  score         Int
+  feedback      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  message   String
+  metadata  Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  balance       Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  walletId      String
+  wallet        Wallet    @relation(fields: [walletId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Float
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
   taskId    String
-  status    TaskStatus
-  changedAt DateTime   @default(now())
-  changedBy String
-  comment   String?
-  task      Task       @relation(fields: [taskId], references: [id])
-
-  @@index([taskId])
+  task      Task     @relation(fields: [taskId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Attachment {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
   fileName  String
   fileUrl   String
   fileType  String
   fileSize  Int
   createdAt DateTime @default(now())
-  task      Task     @relation(fields: [taskId], references: [id])
-
-  @@index([taskId])
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  taskId    String
-  userId    String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  task      Task     @relation(fields: [taskId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([taskId])
-  @@index([userId])
-}
-
-model Submission {
-  id        String           @id @default(uuid())
-  taskId    String
-  workerId  String
-  status    SubmissionStatus @default(PENDING)
-  content   Json
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  review    Review?
-  task      Task             @relation(fields: [taskId], references: [id])
-  worker    User             @relation(fields: [workerId], references: [id])
-
-  @@index([taskId])
-  @@index([workerId])
-}
-
-model Review {
-  id           String     @id @default(uuid())
-  submissionId String     @unique
-  reviewerId   String
-  feedback     String
-  score        Int
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  reviewer     User       @relation(fields: [reviewerId], references: [id])
-  submission   Submission @relation(fields: [submissionId], references: [id])
-
-  @@index([reviewerId])
-}
-
-model TaskTemplate {
-  id          String         @id @default(uuid())
-  title       String
-  description String
-  type        TaskType
-  difficulty  TaskDifficulty
-  category    String[]
-  tags        String[]
-  priority    TaskPriority   @default(MEDIUM)
-  estimatedTime Int?         // in minutes
-  createdBy   String
-  isPublic    Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  creator     User           @relation(fields: [createdBy], references: [id])
-
-  @@index([createdBy])
-}
-
-model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String
-  name          String?
-  role          UserRole       @default(CLIENT)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  profile       Profile?
-  refreshTokens RefreshToken[]
-  reviews       Review[]
-  submissions   Submission[]
-  clientTasks   Task[]         @relation("ClientTasks")
-  workerTasks   Task[]         @relation("WorkerTasks")
-  comments      Comment[]
-  taskTemplates TaskTemplate[]
 }
 
 enum UserRole {
   ADMIN
   WORKER
   CLIENT
-}
-
-enum TaskStatus {
-  OPEN
-  ASSIGNED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  USER
+  REVIEWER
 }
 
 enum TaskType {
@@ -202,10 +171,20 @@ enum TaskType {
   MODERATION
 }
 
+enum TaskStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  REJECTED
+}
+
 enum TaskDifficulty {
   EASY
   MEDIUM
   HARD
+  EXPERT
 }
 
 enum SubmissionStatus {
@@ -215,9 +194,16 @@ enum SubmissionStatus {
   NEEDS_REVISION
 }
 
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TASK_REWARD
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
 }

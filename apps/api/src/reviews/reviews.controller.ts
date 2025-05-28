@@ -7,6 +7,7 @@ import { UserRole } from '@prisma/client';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { DisputeReviewDto } from './dto/dispute-review.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request as ExpressRequest } from 'express';
 
 @ApiTags('reviews')
 @Controller('reviews')
@@ -21,7 +22,7 @@ export class ReviewsController {
   @ApiResponse({ status: 201, description: 'The review has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Submission not found.' })
-  create(@Body() dto: CreateReviewDto, @Request() req) {
+  create(@Body() dto: CreateReviewDto, @Request() req: ExpressRequest) {
     // reviewerId comes from token
     return this.reviewsService.createReview({ ...dto, reviewerId: req.user.id });
   }
@@ -48,7 +49,7 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'The review has been successfully disputed.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Review not found.' })
-  dispute(@Param('id') id: string, @Body() dto: DisputeReviewDto, @Request() req) {
+  dispute(@Param('id') id: string, @Body() dto: DisputeReviewDto, @Request() req: ExpressRequest) {
     return this.reviewsService.disputeReview(id, dto.reason, req.user.id);
   }
 } 
