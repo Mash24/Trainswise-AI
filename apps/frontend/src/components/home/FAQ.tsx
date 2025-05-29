@@ -37,8 +37,8 @@ const faqs = [
 export function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section className="w-full py-20 bg-gradient-to-br from-bg-light via-white to-primary/5">
-      <div className="max-w-4xl mx-auto px-6">
+    <section className="w-full py-16 bg-white rounded-2xl shadow-xl shadow-primary/10 mb-12">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-6">
         <div className="flex items-center gap-3 mb-8">
           <HelpCircle className="w-7 h-7 text-primary" />
           <h2 className="text-3xl md:text-4xl font-extrabold text-text-main">Frequently Asked Questions</h2>

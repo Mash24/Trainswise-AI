@@ -42,8 +42,8 @@ const navigation = {
 
 export function Footer() {
   return (
-    <footer className="bg-muted/50 border-t pt-12" aria-label="Site footer">
-      <div className="container px-4 mx-auto">
+    <footer className="w-full py-8 bg-background rounded-2xl shadow-xl shadow-primary/10 mt-12">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-8">
           <div className="max-w-xs">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">

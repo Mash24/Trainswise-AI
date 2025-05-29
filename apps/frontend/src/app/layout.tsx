@@ -26,7 +26,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            <div className="max-w-7xl mx-auto px-6 md:px-10">
+              {children}
+            </div>
           </AuthProvider>
         </ThemeProvider>
       </body>

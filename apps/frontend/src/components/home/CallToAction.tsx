@@ -52,7 +52,7 @@ const companies = [
 
 export function CallToAction() {
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-br from-primary/5 via-accent/10 to-secondary/5">
+    <section className="relative py-32 overflow-hidden bg-gradient-to-br from-primary/5 via-accent/10 to-secondary/5 w-full">
       {/* Animated Gradient Background */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -61,17 +61,17 @@ export function CallToAction() {
         className="absolute inset-0 pointer-events-none"
       >
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/20 rounded-full blur-3xl opacity-40 animate-blob" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/20 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000" />
       </motion.div>
 
-      <div className="container mx-auto px-4 relative z-10 flex flex-col gap-24">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-6 relative z-10 flex flex-col gap-24">
         {/* Glassmorphism CTA Card */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
           viewport={{ once: true }}
-          className="mx-auto max-w-5xl bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl p-12 flex flex-col lg:flex-row gap-12 items-center border border-white/40"
+          className="w-full bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl p-12 flex flex-col lg:flex-row gap-12 items-center border border-white/40 mx-auto"
         >
           {/* New Unsplash Image */}
           <motion.div
@@ -171,7 +171,7 @@ export function CallToAction() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
           viewport={{ once: true }}
-          className="mx-auto max-w-3xl bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 flex flex-col items-center border border-white/40"
+          className="w-full bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 flex flex-col items-center border border-white/40"
         >
           <TestimonialCarousel testimonials={testimonials} />
         </motion.div>
@@ -182,7 +182,7 @@ export function CallToAction() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
           viewport={{ once: true }}
-          className="mx-auto max-w-5xl flex flex-col items-center gap-4 py-6"
+          className="w-full flex flex-col items-center gap-4 py-6"
         >
           <div className="text-lg font-semibold text-muted-foreground mb-2">Trusted by leading companies</div>
           <div className="flex flex-wrap justify-center items-center gap-8 w-full">
@@ -205,7 +205,7 @@ export function CallToAction() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.4 }}
           viewport={{ once: true }}
-          className="mx-auto max-w-5xl bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 rounded-2xl shadow-xl p-12 flex flex-col md:flex-row gap-8 items-center border border-white/30"
+          className="w-full bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10 rounded-2xl shadow-xl p-12 flex flex-col md:flex-row gap-8 items-center border border-white/30"
         >
           <div className="flex-1">
             <h3 className="text-2xl font-bold mb-2">Our Impact</h3>

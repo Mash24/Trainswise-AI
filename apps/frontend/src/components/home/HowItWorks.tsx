@@ -33,13 +33,13 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-muted/50 relative overflow-hidden" id="how-it-works">
+    <section className="py-24 bg-muted/50 relative overflow-hidden w-full" id="how-it-works">
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern bg-[size:60px_60px] opacity-5" />
       <div className="absolute top-1/2 -left-32 w-64 h-64 bg-primary-light/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70" />
       <div className="absolute bottom-0 -right-32 w-64 h-64 bg-secondary-light/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70" />
 
-      <div className="container px-4 mx-auto relative">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-6 relative">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

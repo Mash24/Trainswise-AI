@@ -20,9 +20,9 @@ const config: Config = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
+        background: '#F8F9FB',   // Light page background
         foreground: 'hsl(var(--foreground))',
-        primary: '#6366f1', // Indigo
+        primary: '#6C47FF',      // Brand indigo
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
@@ -37,10 +37,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
-        accent: {
-          cyan: '#06b6d4',
-          orange: '#f97316',
-        },
+        accent: '#FFB800',       // Highlight/CTA yellow
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
@@ -50,16 +47,20 @@ const config: Config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         'bg-light': '#f9fafb',
-        'text-main': '#111827',
+        text: '#23272F',         // Main readable text
+        cta: '#00C48C',          // Success/action green
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        'xl': '1rem',
+        '2xl': '1.5rem',
       },
       fontFamily: {
-        sans: ['Inter', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'],
+        sans: ['Inter', 'sans-serif'],
         display: ['Plus Jakarta Sans', 'Inter', 'ui-sans-serif'],
+        heading: ['Lexend', 'sans-serif'],
       },
       keyframes: {
         'accordion-down': {
@@ -129,6 +130,7 @@ const config: Config = {
       boxShadow: {
         glass: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
         card: '0 4px 24px 0 rgba(99, 102, 241, 0.08)',
+        xl: '0 8px 32px 0 rgba(108, 71, 255, 0.10)',
       },
     },
   },

@@ -2,8 +2,8 @@ import { Mail, MessageCircle } from 'lucide-react';
 
 export function Support() {
   return (
-    <section className="w-full py-20 bg-gradient-to-br from-primary/5 via-bg-light to-accent-cyan/10">
-      <div className="max-w-3xl mx-auto px-6">
+    <section className="w-full px-4 sm:px-6 md:px-12 py-12 bg-background rounded-2xl shadow-xl shadow-primary/10 mb-12">
+      <div className="w-full px-3 sm:px-4 md:px-5 lg:px-6 xl:px-6">
         <div className="flex items-center gap-3 mb-8">
           <MessageCircle className="w-7 h-7 text-accent-cyan" />
           <h2 className="text-3xl md:text-4xl font-extrabold text-text-main">Need Help? Contact Support</h2>
