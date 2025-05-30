@@ -4,22 +4,12 @@ import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 interface JwtPayload {
   email: string;
   sub: string;
   role: string;
-}
-
-interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-    role: string;
-  };
 }
 
 // Add local User type
@@ -54,7 +44,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: Omit<User, 'password'>): Promise<LoginResponse> {
+  async login(user: Omit<User, 'password'>): Promise<LoginResponseDto> {
     const payload: JwtPayload = { email: user.email, sub: user.id, role: user.role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.sign(payload),
@@ -89,7 +79,7 @@ export class AuthService {
     return token;
   }
 
-  async refreshToken(token: string) {
+  async refreshToken(token: string): Promise<LoginResponseDto> {
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { token },
       include: { user: true },

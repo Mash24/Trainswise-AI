@@ -25,10 +25,10 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Username</label>
+              <label className="block text-sm font-medium mb-1">Name</label>
               <input
                 type="text"
-                value={user?.username || ''}
+                value={user?.name || ''}
                 disabled
                 className="w-full bg-background border rounded-md px-3 py-2"
               />

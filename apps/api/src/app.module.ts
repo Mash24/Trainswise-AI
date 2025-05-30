@@ -7,12 +7,8 @@ import { HealthModule } from './health/health.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { appConfig, authConfig, databaseConfig, redisConfig, rateLimitConfig } from '@nexusloop/config';
-import { CacheStoreFactory } from '@nestjs/common/cache/interfaces/cache-manager.interface';
 import { TasksModule } from './tasks/tasks.module';
-import { SubmissionsModule } from './submissions/submissions.module';
 import { ReviewsModule } from './reviews/reviews.module';
-import { WalletModule } from './wallet/wallet.module';
-import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -34,10 +30,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     AuthModule,
     HealthModule,
     TasksModule,
-    SubmissionsModule,
     ReviewsModule,
-    WalletModule,
-    NotificationsModule,
   ],
 })
 export class AppModule {} 

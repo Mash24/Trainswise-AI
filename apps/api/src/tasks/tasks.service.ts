@@ -4,8 +4,8 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CreateTaskTemplateDto } from './dto/create-task-template.dto';
 import { BulkCreateTasksDto } from './dto/bulk-create-tasks.dto';
-import { TaskStatus, TaskType, TaskDifficulty } from '@prisma/client';
 import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { $Enums } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
@@ -19,6 +19,7 @@ export class TasksService {
       data: {
         ...createTaskDto,
         clientId,
+        status: $Enums.TaskStatus.OPEN,
       },
       include: {
         client: true,
@@ -28,9 +29,9 @@ export class TasksService {
   }
 
   async findAll(filters: {
-    status?: TaskStatus;
-    type?: TaskType;
-    difficulty?: TaskDifficulty;
+    status?: $Enums.TaskStatus;
+    type?: $Enums.TaskType;
+    difficulty?: $Enums.TaskDifficulty;
     clientId?: string;
     assignedToId?: string;
   }) {
@@ -44,6 +45,12 @@ export class TasksService {
       },
       include: {
         client: true,
+        assignedTo: true,
+        submissions: {
+          include: {
+            reviews: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -56,8 +63,18 @@ export class TasksService {
       where: { id },
       include: {
         client: true,
-        submissions: true,
-        reviews: true,
+        assignedTo: true,
+        submissions: {
+          include: {
+            reviews: true,
+          },
+        },
+        comments: {
+          include: {
+            user: true,
+          },
+        },
+        attachments: true,
       },
     });
 
@@ -68,7 +85,7 @@ export class TasksService {
     return task;
   }
 
-  async update(id: string, updateTaskDto: UpdateTaskDto & { status?: TaskStatus }, userId: string) {
+  async update(id: string, updateTaskDto: UpdateTaskDto & { status?: $Enums.TaskStatus }, userId: string) {
     const task = await this.findOne(id);
 
     // Only client can update task details
@@ -78,14 +95,22 @@ export class TasksService {
 
     const { status, ...updateData } = updateTaskDto;
 
-    // If status is being updated, you may want to handle status history here
-    // ...
+    // If status is being updated, notify relevant users
+    if (status && status !== task.status) {
+      if (task.assignedToId) {
+        this.notificationsGateway.notifyTaskStatusChange(id, task.assignedToId, status);
+      }
+    }
 
     return this.prisma.task.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...updateData,
+        status: status || task.status,
+      },
       include: {
         client: true,
+        assignedTo: true,
       },
     });
   }
@@ -97,6 +122,11 @@ export class TasksService {
     if (task.clientId !== userId) {
       throw new BadRequestException('Only the task client can delete the task');
     }
+
+    // Optionally notify assigned worker if any (using notifyTaskCompleted if appropriate)
+    // if (task.assignedToId) {
+    //   this.notificationsGateway.notifyTaskCompleted(id, task.assignedToId);
+    // }
 
     return this.prisma.task.delete({
       where: { id },

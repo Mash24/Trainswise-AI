@@ -1,9 +1,8 @@
 import { Injectable, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from '@prisma/client';
 
 export interface RequestWithUser extends Request {
-  user: User;
+  user: any;
 }
 
 @Injectable()
@@ -12,7 +11,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: User) {
+  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext, status?: any): TUser {
     if (err || !user) {
       throw err;
     }

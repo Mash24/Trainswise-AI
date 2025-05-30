@@ -50,6 +50,13 @@ const companies = [
   { name: "Nvidia", src: "https://upload.wikimedia.org/wikipedia/commons/2/21/Nvidia_logo.svg" },
 ];
 
+interface Testimonial {
+  avatar: string;
+  name: string;
+  country: string;
+  quote: string;
+}
+
 export function CallToAction() {
   return (
     <section className="relative py-32 overflow-hidden bg-gradient-to-br from-primary/5 via-accent/10 to-secondary/5 w-full">
@@ -85,6 +92,7 @@ export function CallToAction() {
               src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80"
               alt="Teamwork and AI Collaboration"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover rounded-2xl shadow-lg"
               priority
             />
@@ -242,6 +250,7 @@ export function CallToAction() {
               src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80"
               alt="Global Impact"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover rounded-2xl shadow-lg"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent rounded-2xl" />
@@ -252,35 +261,45 @@ export function CallToAction() {
   );
 }
 
-function TestimonialCarousel({ testimonials }) {
+function TestimonialCarousel({ testimonials }: { testimonials: Testimonial[] }) {
   const [index, setIndex] = useState(0);
+  const [isClient, setIsClient] = useState(false);
   const cardsToShow = 3;
   const interval = 4000; // 4 seconds
 
   // Responsive: 1 on mobile, 2 on tablet, 3 on desktop
   const getCardsToShow = () => {
-    if (typeof window === 'undefined') return cardsToShow;
     if (window.innerWidth < 640) return 1;
     if (window.innerWidth < 1024) return 2;
     return 3;
   };
 
-  const [visibleCards, setVisibleCards] = useState(getCardsToShow());
+  const [visibleCards, setVisibleCards] = useState(3); // Default to 3 for SSR
+
+  // Initialize client-side state
+  useEffect(() => {
+    setIsClient(true);
+    setVisibleCards(getCardsToShow());
+  }, []);
 
   // Update visibleCards on resize
   useEffect(() => {
+    if (!isClient) return;
+    
     const handleResize = () => setVisibleCards(getCardsToShow());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isClient]);
 
   // Auto-slide
   useEffect(() => {
+    if (!isClient) return;
+    
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % testimonials.length);
     }, interval);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [testimonials.length, isClient]);
 
   // Calculate which testimonials to show
   const getVisibleTestimonials = () => {
@@ -293,6 +312,33 @@ function TestimonialCarousel({ testimonials }) {
 
   const next = () => setIndex((i) => (i + 1) % testimonials.length);
   const prev = () => setIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
+
+  // Don't render carousel controls during SSR
+  if (!isClient) {
+    return (
+      <div className="relative w-full flex flex-col items-center">
+        <div className="flex w-full justify-center gap-6">
+          {testimonials.slice(0, 3).map((t) => (
+            <div
+              key={t.name + t.country}
+              className="flex-1 min-w-0 max-w-xs bg-white/90 backdrop-blur rounded-xl shadow p-6 flex flex-col items-center border border-white/30"
+            >
+              <Image
+                src={t.avatar}
+                alt={t.name}
+                width={64}
+                height={64}
+                className="rounded-full border-4 border-primary shadow mb-3"
+              />
+              <p className="text-base italic text-muted-foreground mb-2 text-center">"{t.quote}"</p>
+              <div className="font-semibold text-primary">{t.name}</div>
+              <div className="text-xs text-muted-foreground">{t.country}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full flex flex-col items-center">
@@ -313,7 +359,7 @@ function TestimonialCarousel({ testimonials }) {
               height={64}
               className="rounded-full border-4 border-primary shadow mb-3"
             />
-            <p className="text-base italic text-muted-foreground mb-2 text-center">“{t.quote}”</p>
+            <p className="text-base italic text-muted-foreground mb-2 text-center">"{t.quote}"</p>
             <div className="font-semibold text-primary">{t.name}</div>
             <div className="text-xs text-muted-foreground">{t.country}</div>
           </motion.div>

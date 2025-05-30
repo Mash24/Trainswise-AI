@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Navbar } from '@/components/layout/Navbar';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -26,9 +27,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="max-w-7xl mx-auto px-6 md:px-10">
-              {children}
-            </div>
+            <Navbar />
+            <main className="pt-20">
+              <div className="max-w-7xl mx-auto px-6 md:px-10">
+                {children}
+              </div>
+            </main>
           </AuthProvider>
         </ThemeProvider>
       </body>

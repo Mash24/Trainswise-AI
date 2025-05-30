@@ -1,25 +1,28 @@
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface ReviewItemProps {
+interface Reviewer {
   id: string;
-  taskTitle: string;
-  rating: number;
-  comment: string;
-  reviewer: string;
-  date: string;
+  name: string;
+  avatar?: string;
+}
+
+interface ReviewItemProps {
+  review: {
+    id: string;
+    taskId: string;
+    taskTitle: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    reviewer: Reviewer;
+  };
   className?: string;
 }
 
-export function ReviewItem({
-  id,
-  taskTitle,
-  rating,
-  comment,
-  reviewer,
-  date,
-  className,
-}: ReviewItemProps) {
+export function ReviewItem({ review, className }: ReviewItemProps) {
+  const { taskTitle, rating, comment, createdAt, reviewer } = review;
+
   return (
     <div
       data-testid="review-item"
@@ -31,7 +34,7 @@ export function ReviewItem({
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold">{taskTitle}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">by {reviewer}</p>
+          <p className="mt-1 text-sm text-muted-foreground">by {reviewer.name}</p>
         </div>
         <div className="flex items-center gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -52,7 +55,7 @@ export function ReviewItem({
       <p className="mt-4 text-sm">{comment}</p>
 
       <div className="mt-4 text-sm text-muted-foreground">
-        {new Date(date).toLocaleDateString('en-US', {
+        {new Date(createdAt).toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',

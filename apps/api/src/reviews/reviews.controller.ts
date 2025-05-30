@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, Request, Req } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -22,9 +22,8 @@ export class ReviewsController {
   @ApiResponse({ status: 201, description: 'The review has been successfully created.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Submission not found.' })
-  create(@Body() dto: CreateReviewDto, @Request() req: ExpressRequest) {
-    // reviewerId comes from token
-    return this.reviewsService.createReview({ ...dto, reviewerId: req.user.id });
+  create(@Req() req: any, @Body() dto: CreateReviewDto) {
+    return this.reviewsService.createReview({ ...dto, reviewerId: req.user?.id || req.user });
   }
 
   @Get(':taskId')
@@ -49,7 +48,7 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'The review has been successfully disputed.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Review not found.' })
-  dispute(@Param('id') id: string, @Body() dto: DisputeReviewDto, @Request() req: ExpressRequest) {
-    return this.reviewsService.disputeReview(id, dto.reason, req.user.id);
+  dispute(@Param('id') id: string, @Body() dto: DisputeReviewDto, @Req() req: any) {
+    return this.reviewsService.disputeReview(id, dto.reason, req.user?.id || req.user);
   }
 } 

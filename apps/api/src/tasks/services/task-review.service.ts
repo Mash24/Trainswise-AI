@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@nexusloop/db';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TaskReviewService {
@@ -8,10 +9,11 @@ export class TaskReviewService {
   async createNotification(submission: any, review: any) {
     await this.prisma.notification.create({
       data: {
-        userId: submission.task.assignedToId || '',
+        userId: String(submission.task.assignedToId || ''),
         type: 'TASK_REVIEW',
+        title: `Task "${submission.task.title}" Reviewed`,
         message: `Your task "${submission.task.title}" has been reviewed`,
-        data: {
+        metadata: {
           taskId: submission.taskId,
           submissionId: submission.id,
           reviewId: review.id,
@@ -23,10 +25,11 @@ export class TaskReviewService {
   async createDisputeNotification(submission: any, review: any) {
     await this.prisma.notification.create({
       data: {
-        userId: submission.task.assignedToId || '',
+        userId: String(submission.task.assignedToId || ''),
         type: 'TASK_REVIEW_DISPUTED',
+        title: `Task "${submission.task.title}" Review Disputed`,
         message: `Your review for task "${submission.task.title}" has been disputed`,
-        data: {
+        metadata: {
           taskId: submission.taskId,
           submissionId: submission.id,
           reviewId: review.id,
@@ -38,10 +41,11 @@ export class TaskReviewService {
   async createTestNotification(submission: any) {
     const testNotification = await this.prisma.notification.create({
       data: {
-        userId: submission.task.assignedToId || '',
+        userId: String(submission.task.assignedToId || ''),
         type: 'TEST',
+        title: 'Test Notification',
         message: 'Test notification',
-        data: {},
+        metadata: {},
       },
     });
     return testNotification;

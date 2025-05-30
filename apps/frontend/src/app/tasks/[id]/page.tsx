@@ -7,6 +7,7 @@ import { TaskSubmissionForm } from '@/components/TaskSubmissionForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { API_CONFIG } from '@/config/api';
 
 export default function TaskDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ export default function TaskDetailsPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiClient.get(`/tasks/${id}`);
+        const data = await apiClient.get(API_CONFIG.endpoints.tasks.get(id));
         setTask(data);
       } catch (err) {
         setError('Failed to load task');

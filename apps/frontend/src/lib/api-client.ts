@@ -1,6 +1,25 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { API_CONFIG } from '@/config/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+  };
+}
+
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+}
 
 class ApiClient {
   private client: AxiosInstance;
@@ -8,7 +27,7 @@ class ApiClient {
 
   private constructor() {
     this.client = axios.create({
-      baseURL: API_URL,
+      baseURL: API_CONFIG.baseUrl,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -50,7 +69,7 @@ class ApiClient {
 
           try {
             // Try to refresh the token
-            const response = await this.client.post('/auth/refresh');
+            const response = await this.client.post<AuthResponse>(API_CONFIG.endpoints.auth.refresh);
             const { accessToken } = response.data;
 
             // Store the new token
@@ -104,21 +123,32 @@ export const apiClient = ApiClient.getInstance();
 
 // Auth API methods
 export const authApi = {
-  login: async (email: string, password: string) => {
-    const response = await apiClient.post('/auth/login', { email, password });
-    const { token, refreshToken } = response.data;
-    localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
-    return response.data;
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>(API_CONFIG.endpoints.auth.login, { email, password });
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    return response;
   },
 
-  logout: () => {
-    localStorage.removeItem('token');
+  register: async (email: string, password: string, firstName: string, lastName: string): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>(API_CONFIG.endpoints.auth.register, {
+      email,
+      password,
+      firstName,
+      lastName,
+    });
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    return response;
+  },
+
+  logout: async () => {
+    await apiClient.post(API_CONFIG.endpoints.auth.logout);
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   },
 
-  getCurrentUser: async () => {
-    const response = await apiClient.get('/users/me');
-    return response.data;
+  getCurrentUser: async (): Promise<User> => {
+    return apiClient.get<User>(API_CONFIG.endpoints.auth.me);
   },
 }; 

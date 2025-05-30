@@ -3,9 +3,15 @@ export * from './auth.types';
 export interface User {
   id: string;
   email: string;
-  name: string;
+  name: string | null;
+  role: string;
   createdAt: Date;
   updatedAt: Date;
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+  };
 }
 
 export interface Task {

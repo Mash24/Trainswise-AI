@@ -14,5 +14,5 @@ export class CreateSubmissionDto {
 
   @ApiProperty({ description: 'Optional attachments', required: false })
   @IsOptional()
-  attachments?: Express.Multer.File[];
+  attachments?: any[];
 } 

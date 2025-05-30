@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { authApi } from '@/lib/api-client';
 
 interface User {
   id: string;
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const userData = await apiClient.get<User>('/auth/me');
+      const userData = await authApi.getCurrentUser();
       setUser(userData);
       setError(null);
     } catch (err) {
@@ -60,13 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       setError(null);
       
-      const response = await apiClient.post<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', {
-        email,
-        password,
-      });
-
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      const response = await authApi.login(email, password);
       setUser(response.user);
     } catch (err) {
       setError('Invalid email or password');
@@ -81,15 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       setError(null);
 
-      const response = await apiClient.post<{ accessToken: string; refreshToken: string; user: User }>('/auth/register', {
-        email,
-        password,
-        firstName,
-        lastName,
-      });
-
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      const response = await authApi.register(email, password, firstName, lastName);
       setUser(response.user);
     } catch (err) {
       setError('Registration failed');
@@ -101,12 +87,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await apiClient.post('/auth/logout');
+      await authApi.logout();
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       setUser(null);
     }
   };
