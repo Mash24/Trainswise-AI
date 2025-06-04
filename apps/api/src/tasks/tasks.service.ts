@@ -74,7 +74,6 @@ export class TasksService {
             user: true,
           },
         },
-        attachments: true,
       },
     });
 

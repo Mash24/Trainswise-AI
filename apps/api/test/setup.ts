@@ -14,6 +14,9 @@ beforeAll(async () => {
   await prisma.$transaction([
     prisma.refreshToken.deleteMany(),
     prisma.profile.deleteMany(),
+    prisma.review.deleteMany(),
+    prisma.submission.deleteMany(),
+    prisma.task.deleteMany(),
     prisma.user.deleteMany(),
   ]);
 });

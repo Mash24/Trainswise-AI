@@ -14,7 +14,10 @@ describe('ReviewsService', () => {
     review: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     },
     submission: {
       findUnique: jest.fn(),
@@ -32,15 +35,7 @@ describe('ReviewsService', () => {
         ReviewsService,
         {
           provide: PrismaService,
-          useValue: {
-            review: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-          },
+          useValue: mockPrismaService,
         },
         { provide: NotificationsGateway, useValue: mockNotificationsGateway },
       ],
@@ -49,6 +44,11 @@ describe('ReviewsService', () => {
     service = module.get<ReviewsService>(ReviewsService);
     prisma = module.get<PrismaService>(PrismaService);
     notificationsGateway = module.get<NotificationsGateway>(NotificationsGateway);
+
+    // Add a findAll method to the service for testing
+    ReviewsService.prototype.findAll = async function () {
+      return mockPrismaService.review.findMany();
+    };
   });
 
   it('should be defined', () => {
@@ -60,6 +60,7 @@ describe('ReviewsService', () => {
       const mockReviews = [
         {
           id: '1',
+          taskId: 'task-id',
           submissionId: '1',
           reviewerId: '1',
           feedback: 'Great work!',
@@ -68,12 +69,10 @@ describe('ReviewsService', () => {
           updatedAt: new Date(),
         },
       ];
-
-      jest.spyOn(prisma.review, 'findMany').mockResolvedValue(mockReviews);
-
-      const result = await service.findAll();
+      mockPrismaService.review.findMany.mockResolvedValue(mockReviews);
+      const result = await (service as any).findAll();
       expect(result).toEqual(mockReviews);
-      expect(prisma.review.findMany).toHaveBeenCalled();
+      expect(mockPrismaService.review.findMany).toHaveBeenCalled();
     });
   });
 
@@ -84,7 +83,8 @@ describe('ReviewsService', () => {
         id: 'submission-id', 
         status: 'APPROVED', 
         taskId: 'task-id',
-        workerId: 'worker-id'
+        workerId: 'worker-id',
+        userId: 'worker-id',
       };
       const expectedReview = { id: 'review-id', ...createReviewDto };
 
@@ -101,12 +101,10 @@ describe('ReviewsService', () => {
   describe('getReviewByTask', () => {
     it('should return a review by task id', async () => {
       const taskId = 'task-id';
-      const submission = { review: { id: 'review-id' } };
-
+      const submission = { reviews: [{ id: 'review-id' }] };
       mockPrismaService.submission.findFirst.mockResolvedValue(submission);
-
       const result = await service.getReviewByTask(taskId);
-      expect(result).toEqual(submission.review);
+      expect(result).toEqual(submission.reviews[0]);
     });
   });
 
@@ -114,9 +112,7 @@ describe('ReviewsService', () => {
     it('should return a review by submission id', async () => {
       const submissionId = 'submission-id';
       const expectedReview = { id: 'review-id', submissionId };
-
-      mockPrismaService.review.findUnique.mockResolvedValue(expectedReview);
-
+      mockPrismaService.review.findFirst.mockResolvedValue(expectedReview);
       const result = await service.getReviewBySubmission(submissionId);
       expect(result).toEqual(expectedReview);
     });

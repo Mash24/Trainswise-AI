@@ -34,15 +34,7 @@ describe('TasksService', () => {
         TasksService,
         {
           provide: PrismaService,
-          useValue: {
-            task: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-              delete: jest.fn(),
-            },
-          },
+          useValue: mockPrismaService,
         },
         { provide: NotificationsGateway, useValue: mockNotificationsGateway },
       ],
@@ -92,14 +84,13 @@ describe('TasksService', () => {
           id: '1',
           title: 'Test Task',
           description: 'Test Description',
-          type: 'TEXT_ANNOTATION',
-          difficulty: 'EASY',
-          status: 'OPEN',
+          type: TaskType.TEXT_ANNOTATION,
+          difficulty: TaskDifficulty.EASY,
+          status: TaskStatus.OPEN,
           reward: 100,
           clientId: '1',
-          category: [],
-          tags: [],
-          priority: 'MEDIUM',
+          deadline: new Date(),
+          assignedToId: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -107,7 +98,7 @@ describe('TasksService', () => {
 
       jest.spyOn(prisma.task, 'findMany').mockResolvedValue(mockTasks);
 
-      const result = await service.findAll();
+      const result = await (service as any).findAll({});
       expect(result).toEqual(mockTasks);
       expect(prisma.task.findMany).toHaveBeenCalled();
     });
@@ -126,6 +117,8 @@ describe('TasksService', () => {
         where: { id: taskId },
         include: {
           client: true,
+          reviews: true,
+          submissions: true,
         },
       });
     });
