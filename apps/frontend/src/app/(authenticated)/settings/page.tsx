@@ -28,7 +28,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium mb-1">Name</label>
               <input
                 type="text"
-                value={user?.name || ''}
+                value={`${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`.trim() || ''}
                 disabled
                 className="w-full bg-background border rounded-md px-3 py-2"
               />

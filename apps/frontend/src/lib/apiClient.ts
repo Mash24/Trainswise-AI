@@ -126,26 +126,40 @@ export const apiClient = ApiClient.getInstance();
 // Auth API methods
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>(API_CONFIG.endpoints.auth.login, { email, password });
+    const response = await apiClient.post<AuthResponse>(
+      API_CONFIG.endpoints.auth.login,
+      { email, password },
+      { withCredentials: true }
+    );
     localStorage.setItem('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     return response;
   },
 
   register: async (email: string, password: string, firstName: string, lastName: string): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>(API_CONFIG.endpoints.auth.register, {
-      email,
-      password,
-      firstName,
-      lastName,
-    });
+    const response = await apiClient.post<AuthResponse>(
+      API_CONFIG.endpoints.auth.register,
+      {
+        email,
+        password,
+        firstName,
+        lastName,
+      },
+      { withCredentials: true }
+    );
     localStorage.setItem('accessToken', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     return response;
   },
 
   logout: async () => {
-    await apiClient.post(API_CONFIG.endpoints.auth.logout);
+    try {
+      await apiClient.post(API_CONFIG.endpoints.auth.logout, undefined, { withCredentials: true });
+    } catch (error) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      throw error;
+    }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
   },

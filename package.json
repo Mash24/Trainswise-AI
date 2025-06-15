@@ -20,7 +20,9 @@
     "db:push": "turbo run db:push",
     "db:studio": "turbo run db:studio",
     "db:seed": "turbo run db:seed",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "test:ci": "DATABASE_URL='postgresql://postgres:postgres@localhost:5432/nexusloop_test?schema=public' npx prisma migrate reset --schema=apps/api/prisma/schema.prisma --force --skip-seed && npm test --prefix apps/api",
+    "seed": "ts-node apps/api/prisma/seed.ts"
   },
   "devDependencies": {
     "@swc/core": "^1.11.29",

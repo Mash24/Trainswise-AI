@@ -1,43 +1,46 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import SettingsPage from '../page';
-import { apiClient } from '@/lib/api-client';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Page from '../../(authenticated)/settings/page';
+import { apiClient } from '@/lib/apiClient';
 
-// Mock the apiClient
-jest.mock('@/lib/api-client', () => ({
+// Mock the api client
+jest.mock('@/lib/apiClient', () => ({
   apiClient: {
     get: jest.fn(),
     put: jest.fn(),
   },
 }));
 
-// Mock the ProtectedRoute component
-jest.mock('@/components/auth/protected-route', () => ({
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
+// Mock profile data
+const mockProfile = {
+  id: '1',
+  email: 'test@example.com',
+  firstName: 'Test',
+  lastName: 'User',
+  bio: 'Test bio',
+};
 
 describe('SettingsPage', () => {
-  const mockProfile = {
-    id: '1',
-    email: 'test@example.com',
-    name: 'Test User',
-    bio: 'Test bio',
-    skills: ['skill1', 'skill2'],
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('shows loading state initially', () => {
-    (apiClient.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    render(<SettingsPage />);
-    // Check for spinner by class
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('renders profile data when loaded', async () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ data: mockProfile });
-    render(<SettingsPage />);
+    (apiClient.get as jest.Mock).mockResolvedValue(mockProfile);
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('Test User')).toBeInTheDocument();
@@ -47,33 +50,40 @@ describe('SettingsPage', () => {
   });
 
   it('handles profile update', async () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ data: mockProfile });
-    (apiClient.put as jest.Mock).mockResolvedValue({ data: { ...mockProfile, name: 'Updated Name' } });
+    (apiClient.get as jest.Mock).mockResolvedValue(mockProfile);
+    (apiClient.put as jest.Mock).mockResolvedValue({ ...mockProfile, firstName: 'Updated' });
     
-    render(<SettingsPage />);
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
 
     await waitFor(() => {
-      const nameInput = screen.getByLabelText('Name');
-      fireEvent.change(nameInput, { target: { value: 'Updated Name' } });
-      
-      const saveButton = screen.getByText('Save Changes');
-      fireEvent.click(saveButton);
+      expect(screen.getByDisplayValue('Test User')).toBeInTheDocument();
     });
 
+    const nameInput = screen.getByLabelText('Name');
+    fireEvent.change(nameInput, { target: { value: 'Updated User' } });
+    
+    const saveButton = screen.getByText('Save Changes');
+    fireEvent.click(saveButton);
+
     await waitFor(() => {
-      expect(apiClient.put).toHaveBeenCalledWith('/users/me', {
-        ...mockProfile,
-        name: 'Updated Name',
+      expect(apiClient.put).toHaveBeenCalledWith('/api/profile', {
+        firstName: 'Updated',
+        lastName: 'User',
+        bio: 'Test bio',
       });
     });
   });
 
   it('shows error message when API call fails', async () => {
-    (apiClient.get as jest.Mock).mockRejectedValue({ response: { data: { message: 'Failed to fetch profile' } } });
-    render(<SettingsPage />);
+    (apiClient.get as jest.Mock).mockRejectedValue(new Error('Failed to load profile'));
+    render(<Page />);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch profile')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load profile')).toBeInTheDocument();
     });
   });
 }); 

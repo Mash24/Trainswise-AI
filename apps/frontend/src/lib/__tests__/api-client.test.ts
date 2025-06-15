@@ -1,149 +1,148 @@
-import { apiClient, authApi } from '../api-client';
-import axios from 'axios';
+// Reset modules before setting up mocks
+jest.resetModules();
 
-// Mock axios
+const mockAxiosInstance = {
+  get: jest.fn(),
+  post: jest.fn(),
+  put: jest.fn(),
+  delete: jest.fn(),
+  patch: jest.fn(),
+  interceptors: {
+    request: { use: jest.fn() },
+    response: { use: jest.fn() }
+  }
+};
+
 jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn(),
-    interceptors: {
-      request: { use: jest.fn() },
-      response: { use: jest.fn() },
-    },
-  })),
+  create: jest.fn(() => mockAxiosInstance)
 }));
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-
 describe('API Client', () => {
+let apiClient: typeof import('../apiClient').apiClient;
+let authApi: typeof import('../apiClient').authApi;
+let API_CONFIG: typeof import('@/config/api').API_CONFIG;
+
+beforeAll(() => {
+  // Import after mock is set up
+  const apiClientModule = require('../apiClient');
+  apiClient = apiClientModule.apiClient;
+  authApi = apiClientModule.authApi;
+  API_CONFIG = require('@/config/api').API_CONFIG;
+});
+
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
+    Object.values(mockAxiosInstance).forEach(mock => {
+      if (typeof mock === 'function') {
+        mock.mockReset();
+      }
+    });
   });
 
   describe('authApi', () => {
-    it('handles successful login', async () => {
-      const mockResponse = {
-        data: {
-          token: 'access-token',
-          refreshToken: 'refresh-token',
+    const mockUser = {
+      id: '1',
+      email: 'test@example.com',
+      name: 'Test User',
+      role: 'user',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const mockAuthResponse = {
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+      user: mockUser,
+    };
+
+    it('should handle successful login', async () => {
+      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockAuthResponse });
+      const result = await authApi.login('test@example.com', 'password');
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        API_CONFIG.endpoints.auth.login,
+        {
+          email: 'test@example.com',
+          password: 'password',
         },
-      };
-      (apiClient.post as jest.Mock).mockResolvedValue(mockResponse);
-
-      const email = 'test@example.com';
-      const password = 'password';
-      await authApi.login(email, password);
-
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/login', { email, password });
-      expect(localStorage.setItem).toHaveBeenCalledWith('token', 'access-token');
-      expect(localStorage.setItem).toHaveBeenCalledWith('refreshToken', 'refresh-token');
+        expect.anything()
+      );
+      expect(localStorage.getItem('accessToken')).toBe('mock-access-token');
+      expect(localStorage.getItem('refreshToken')).toBe('mock-refresh-token');
+      expect(result).toEqual(mockAuthResponse);
     });
 
-    it('handles logout', () => {
-      authApi.logout();
-      expect(localStorage.removeItem).toHaveBeenCalledWith('token');
-      expect(localStorage.removeItem).toHaveBeenCalledWith('refreshToken');
+    it('should handle login failure', async () => {
+      const mockError = new Error('Invalid credentials');
+      mockAxiosInstance.post.mockRejectedValueOnce(mockError);
+      await expect(authApi.login('test@example.com', 'password')).rejects.toThrow('Invalid credentials');
+      expect(localStorage.getItem('accessToken')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
     });
 
-    it('fetches current user', async () => {
-      const mockUser = { id: '1', email: 'test@example.com' };
-      (apiClient.get as jest.Mock).mockResolvedValue({ data: mockUser });
-
-      const user = await authApi.getCurrentUser();
-      expect(apiClient.get).toHaveBeenCalledWith('/users/me');
-      expect(user).toEqual(mockUser);
-    });
-  });
-
-  describe('Request Interceptor', () => {
-    it('adds authorization header when token exists', async () => {
-      (localStorage.getItem as jest.Mock).mockReturnValue('test-token');
-      const config = { headers: {} };
-      // Simulate the interceptor logic
-      const interceptor = (config: any) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      };
-      const result = await interceptor(config);
-      expect(result.headers.Authorization).toBe('Bearer test-token');
-    });
-
-    it('does not add authorization header when token does not exist', async () => {
-      (localStorage.getItem as jest.Mock).mockReturnValue(null);
-      const config = { headers: {} };
-      const interceptor = (config: any) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      };
-      const result = await interceptor(config);
-      expect(result.headers.Authorization).toBeUndefined();
-    });
-  });
-
-  describe('Response Interceptor', () => {
-    it('handles 401 error by refreshing token', async () => {
-      const mockRefreshResponse = {
-        data: {
-          token: 'new-access-token',
+    it('should handle successful registration', async () => {
+      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockAuthResponse });
+      const result = await authApi.register('test@example.com', 'password', 'John', 'Doe');
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        API_CONFIG.endpoints.auth.register,
+        {
+          email: 'test@example.com',
+          password: 'password',
+          firstName: 'John',
+          lastName: 'Doe',
         },
-      };
-      (apiClient.post as jest.Mock).mockResolvedValue(mockRefreshResponse);
-
-      const error: any = {
-        response: { status: 401 },
-        config: { url: '/api/protected', _retry: false, headers: {} },
-      };
-      // Simulate the interceptor logic
-      const interceptor = async (error: any) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          try {
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (refreshToken) {
-              const response = await apiClient.post('/auth/refresh', { refreshToken });
-              const { token } = response.data;
-              localStorage.setItem('token', token);
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return apiClient(originalRequest);
-            }
-          } catch (refreshError) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            // window.location.href = '/login';
-          }
-        }
-        return Promise.reject(error);
-      };
-      await expect(interceptor(error)).rejects.toBe(error);
+        expect.anything()
+      );
+      expect(localStorage.getItem('accessToken')).toBe('mock-access-token');
+      expect(localStorage.getItem('refreshToken')).toBe('mock-refresh-token');
+      expect(result).toEqual(mockAuthResponse);
     });
 
-    it('does not handle non-401 errors', async () => {
-      const error: any = {
-        response: { status: 404 },
-      };
-      const interceptor = async (error: any) => {
-        if (error.response?.status === 401) {
-          // ...
-        }
-        return Promise.reject(error);
-      };
-      await expect(interceptor(error)).rejects.toEqual(error);
-      expect(apiClient.post).not.toHaveBeenCalled();
+    it('should handle registration failure', async () => {
+      const mockError = new Error('Email already exists');
+      mockAxiosInstance.post.mockRejectedValueOnce(mockError);
+      await expect(authApi.register('test@example.com', 'password', 'John', 'Doe')).rejects.toThrow('Email already exists');
+      expect(localStorage.getItem('accessToken')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+    });
+
+    it('should handle successful logout', async () => {
+      localStorage.setItem('accessToken', 'test-access-token');
+      localStorage.setItem('refreshToken', 'test-refresh-token');
+      mockAxiosInstance.post.mockResolvedValueOnce({ data: { success: true } });
+      await authApi.logout();
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        API_CONFIG.endpoints.auth.logout,
+        undefined,
+        { withCredentials: true }
+      );
+      expect(localStorage.getItem('accessToken')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+    });
+
+    it('should handle logout failure', async () => {
+      localStorage.setItem('accessToken', 'test-access-token');
+      localStorage.setItem('refreshToken', 'test-refresh-token');
+      const mockError = new Error('Logout failed');
+      mockAxiosInstance.post.mockRejectedValueOnce(mockError);
+      await expect(authApi.logout()).rejects.toThrow('Logout failed');
+      expect(localStorage.getItem('accessToken')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+    });
+
+    it('should handle successful user fetch', async () => {
+      mockAxiosInstance.get.mockResolvedValueOnce({ data: mockUser });
+      const result = await authApi.getCurrentUser();
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+        API_CONFIG.endpoints.auth.me,
+        undefined
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it('should handle user fetch failure', async () => {
+      const mockError = new Error('Not authenticated');
+      mockAxiosInstance.get.mockRejectedValueOnce(mockError);
+      await expect(authApi.getCurrentUser()).rejects.toThrow('Not authenticated');
     });
   });
 }); 

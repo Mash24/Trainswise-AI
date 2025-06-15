@@ -1,15 +1,15 @@
 'use client';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import { authApi } from '@/lib/apiClient';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default function RegisterPage() {
+const RegisterPage: React.FC = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,10 +17,8 @@ export default function RegisterPage() {
     firstName: '',
     lastName: '',
   });
+  const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const { register, error } = useAuth();
-  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -29,17 +27,14 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
-
+    setFormError('');
     if (formData.password !== formData.confirmPassword) {
       setFormError('Passwords do not match');
       return;
     }
-
     setIsLoading(true);
-
     try {
-      await register(
+      await authApi.register(
         formData.email,
         formData.password,
         formData.firstName,
@@ -47,7 +42,8 @@ export default function RegisterPage() {
       );
       router.push('/dashboard');
     } catch (err) {
-      // Error is handled by AuthContext
+      console.error('Registration error:', err);
+      setFormError('Registration failed');
     } finally {
       setIsLoading(false);
     }
@@ -64,9 +60,9 @@ export default function RegisterPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            {(error || formError) && (
+            {formError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {formError || error}
+                {formError}
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
@@ -149,4 +145,6 @@ export default function RegisterPage() {
       </Card>
     </div>
   );
-} 
+};
+
+export default RegisterPage; 

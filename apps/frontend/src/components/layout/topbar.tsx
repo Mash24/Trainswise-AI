@@ -1,7 +1,7 @@
 import { Sun, Moon, Bell } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-export function Topbar() {
+export default function Topbar() {
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {

@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import TasksPage from '../page';
-import { apiClient } from '@/lib/api-client';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Page from '../../(authenticated)/tasks/page';
+import { apiClient } from '@/lib/apiClient';
 
 // Mock the apiClient
-jest.mock('@/lib/api-client', () => ({
+jest.mock('@/lib/apiClient', () => ({
   apiClient: {
     get: jest.fn(),
   },
@@ -14,41 +15,59 @@ jest.mock('@/components/auth/protected-route', () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-describe('TasksPage', () => {
-  const mockTasks = [
-    {
-      id: '1',
-      title: 'Task 1',
-      description: 'Description 1',
-      reward: 100,
-      deadline: new Date('2024-12-31').toISOString(),
-      status: 'OPEN',
-      tags: ['tag1', 'tag2'],
-    },
-    {
-      id: '2',
-      title: 'Task 2',
-      description: 'Description 2',
-      reward: 200,
-      deadline: new Date('2024-12-31').toISOString(),
-      status: 'IN_PROGRESS',
-      tags: ['tag3'],
-    },
-  ];
+// Mock tasks data
+const mockTasks = [
+  {
+    id: 1,
+    title: 'Task 1',
+    description: 'Description 1',
+    status: 'pending',
+  },
+  {
+    id: 2,
+    title: 'Task 2',
+    description: 'Description 2',
+    status: 'completed',
+  },
+];
 
+// Mock auth context
+const mockAuthContext = {
+  user: {
+    id: '1',
+    email: 'test@example.com',
+    role: 'user',
+    profile: {
+      firstName: 'Test',
+      lastName: 'User',
+    },
+  },
+  login: jest.fn(),
+  logout: jest.fn(),
+  isLoading: false,
+};
+
+describe('TasksPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('shows loading state initially', () => {
-    (apiClient.get as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    render(<TasksPage />);
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('renders tasks when data is loaded', async () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ data: mockTasks });
-    render(<TasksPage />);
+    (apiClient.get as jest.Mock).mockResolvedValue(mockTasks);
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText('Task 1')).toBeInTheDocument();
@@ -57,11 +76,15 @@ describe('TasksPage', () => {
   });
 
   it('shows error message when API call fails', async () => {
-    (apiClient.get as jest.Mock).mockRejectedValue({ response: { data: { message: 'Error loading tasks' } } });
-    render(<TasksPage />);
+    (apiClient.get as jest.Mock).mockRejectedValue(new Error('Failed to fetch tasks. Please try again later.'));
+    render(
+      <AuthProvider>
+        <Page />
+      </AuthProvider>
+    );
 
     await waitFor(() => {
-      expect(screen.getByText('Error loading tasks')).toBeInTheDocument();
+      expect(screen.getByText('Failed to fetch tasks. Please try again later.')).toBeInTheDocument();
     });
   });
 }); 

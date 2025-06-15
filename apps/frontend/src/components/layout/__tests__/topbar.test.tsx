@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider } from 'next-themes';
-import { Topbar } from '../topbar';
+import { Topbar } from '../index';
 
 // Mock next-themes
 jest.mock('next-themes', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   useTheme: () => ({
     theme: 'light',
     setTheme: jest.fn(),

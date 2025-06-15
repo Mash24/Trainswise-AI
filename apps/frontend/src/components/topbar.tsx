@@ -15,7 +15,9 @@ export function Topbar() {
         {user ? (
           <>
             <span className="text-sm text-muted-foreground">
-              {user.name || user.email}
+              {user.profile?.firstName && user.profile?.lastName 
+                ? `${user.profile.firstName} ${user.profile.lastName}`
+                : user.email}
             </span>
             <Button variant="ghost" onClick={logout}>
               Logout

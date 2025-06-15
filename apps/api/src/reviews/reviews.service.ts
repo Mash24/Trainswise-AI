@@ -2,13 +2,11 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { DisputeReviewDto } from './dto/dispute-review.dto';
-import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class ReviewsService {
   constructor(
-    private prisma: PrismaService,
-    private notificationsGateway: NotificationsGateway,
+    private prisma: PrismaService
   ) {}
 
   async createReview(dto: CreateReviewDto) {
@@ -34,8 +32,6 @@ export class ReviewsService {
         taskId: submission.taskId,
       },
     });
-    // Notify worker (user who made the submission)
-    this.notificationsGateway.notifyTaskStatusChange(submission.taskId, submission.userId, 'REVIEWED');
     return review;
   }
 
@@ -65,8 +61,6 @@ export class ReviewsService {
       where: { id: reviewId },
       data: { feedback: review.feedback + `\n[DISPUTED by ${userId}]: ${reason}` },
     });
-    // Notify reviewer
-    this.notificationsGateway.notifyTaskStatusChange(review.submissionId, review.reviewerId, 'DISPUTED');
     return updatedReview;
   }
 } 

@@ -45,6 +45,7 @@ export class AuthService {
   }
 
   async login(user: Omit<User, 'password'>): Promise<LoginResponseDto> {
+    console.log('Attempting login for user:', user.email);
     const payload: JwtPayload = { email: user.email, sub: user.id, role: user.role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.sign(payload),

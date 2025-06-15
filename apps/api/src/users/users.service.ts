@@ -10,18 +10,23 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const existingUser = await this.findByEmail(createUserDto.email);
-    if (existingUser) {
-      throw new ConflictException('Email already exists');
+    try {
+      const existingUser = await this.findByEmail(createUserDto.email);
+      if (existingUser) {
+        console.error('User creation failed: Email already exists:', createUserDto.email);
+        throw new ConflictException('Email already exists');
+      }
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      return await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          password: hashedPassword,
+        },
+      });
+    } catch (err) {
+      console.error('User creation failed:', err);
+      throw err;
     }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    return this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: hashedPassword,
-      },
-    });
   }
 
   async findAll(): Promise<User[]> {

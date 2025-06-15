@@ -64,21 +64,26 @@ export class AuthController {
   @ApiResponse({ status: 201, type: LoginResponseDto, description: 'Registration successful' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   async register(@Body() dto: RegisterDto): Promise<LoginResponseDto> {
-    // Create the user using UsersService
-    const user = await this.usersService.create({
-      email: dto.email,
-      password: dto.password,
-      name: `${dto.firstName} ${dto.lastName}`,
-    });
-    // Log the user in immediately after registration
-    return this.authService.login({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    });
+    console.log('Registering user:', dto.email);
+    try {
+      const user = await this.usersService.create({
+        email: dto.email,
+        password: dto.password,
+        name: `${dto.firstName} ${dto.lastName}`,
+      });
+      // Log the user in immediately after registration
+      return this.authService.login({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      });
+    } catch (err) {
+      console.error('Registration failed:', err);
+      throw err;
+    }
   }
 
   @Post('refresh')

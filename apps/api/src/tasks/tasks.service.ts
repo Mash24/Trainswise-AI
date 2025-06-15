@@ -4,14 +4,12 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { CreateTaskTemplateDto } from './dto/create-task-template.dto';
 import { BulkCreateTasksDto } from './dto/bulk-create-tasks.dto';
-import { NotificationsGateway } from '../notifications/notifications.gateway';
 import { $Enums } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private prisma: PrismaService,
-    private notificationsGateway: NotificationsGateway,
+    private prisma: PrismaService
   ) {}
 
   async create(createTaskDto: CreateTaskDto, clientId: string) {
@@ -93,13 +91,6 @@ export class TasksService {
     }
 
     const { status, ...updateData } = updateTaskDto;
-
-    // If status is being updated, notify relevant users
-    if (status && status !== task.status) {
-      if (task.assignedToId) {
-        this.notificationsGateway.notifyTaskStatusChange(id, task.assignedToId, status);
-      }
-    }
 
     return this.prisma.task.update({
       where: { id },

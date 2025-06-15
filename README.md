@@ -83,6 +83,37 @@ A modern, scalable application built with NestJS, React, and Prisma. NexusLoop i
    npm run dev:web     # Web application
    ```
 
+## Quick Start
+
+1. **Copy the example environment file and configure your secrets:**
+   ```bash
+   cp .env.example apps/api/.env
+   # Edit apps/api/.env as needed
+   ```
+
+2. **Run the app:**
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. **Run tests:**
+   ```bash
+   npm run test:ci
+   ```
+   - This will use an isolated test database and run all backend tests.
+
+4. **Reset the development database:**
+   ```bash
+   bash scripts/reset-dev.sh
+   ```
+   - This cleans node_modules, resets the dev DB, reinstalls dependencies, and regenerates Prisma client.
+
+5. **Seed the database:**
+   ```bash
+   npm run seed
+   ```
+
 ## Project Structure
 
 ```
